@@ -20,13 +20,19 @@ The wedge against MacWhisper and the rest of the local-transcription field:
 - [x] Output: txt, srt, vtt, markdown, json
 - [x] CLI prototype (`diarize-proto`)
 
+- [x] **App shell** — drop zone, queue sidebar, transcript view, menu bar item,
+      runtime Dock-icon toggle, app icon
+- [x] **Speaker naming** with persisted, clearable recents
+
 ## Next
 
-- [ ] **Xcode app target.** SwiftUI window: drop zone, batch queue, transcript viewer.
-      Reference: Fireflies' upload card (language selector lives in it), Sana AI's
-      transcript+player layout. Not Otter's — too speaker-heavy for v1.
+- [ ] **Look at the UI.** Screen capture was declined during the build, so the layout has
+      never actually been reviewed. Do this before anything else — spacing, the empty
+      state, and the speaker popover are all unverified guesses.
 - [ ] **Action Extension** for Finder Quick Actions, replacing the Automator workflows
-      from the earlier CLI version.
+      from the earlier CLI version. This forces the move to a real `.xcodeproj`.
+- [ ] **Audio player** synced to the transcript — click a block to hear it. The single
+      biggest gap versus Otter/Sana, and the timestamps are already there.
 - [ ] **Sandbox entitlements.** Required for App Store. The extension gets read access to
       the selected file; writing a sibling `.txt` is *not* automatically granted. Needs a
       save panel or a security-scoped bookmark. This changes the "file just appears next

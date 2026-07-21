@@ -8,10 +8,25 @@ public struct TranscriptBlock: Sendable {
     public let end: Double
     /// Lowest confidence seen in this block, when the engine reported any.
     public let minConfidence: Double?
+
+    public init(
+        speaker: String?, text: String, start: Double, end: Double, minConfidence: Double?
+    ) {
+        self.speaker = speaker
+        self.text = text
+        self.start = start
+        self.end = end
+        self.minConfidence = minConfidence
+    }
 }
 
 public struct SpeakerTranscript: Sendable {
     public let blocks: [TranscriptBlock]
+
+    public init(blocks: [TranscriptBlock]) {
+        self.blocks = blocks
+    }
+
     public var speakerCount: Int {
         Set(blocks.compactMap(\.speaker)).count
     }

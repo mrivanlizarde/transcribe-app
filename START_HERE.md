@@ -1,4 +1,4 @@
-# START HERE
+# START HERE — Hark
 
 On-device transcription with speaker labels for macOS. Audio or video in, a
 speaker-attributed transcript out. Everything runs locally — no API key, no network
@@ -16,8 +16,21 @@ Two engines are combined, and that combination is the whole point of the project
 
 ## Run it and verify
 
+**The app:**
+
 ```sh
 cd ~/Code/transcribe-app
+./make-app.sh          # builds dist/Hark.app, icon included
+open dist/Hark.app
+```
+
+`make-app.sh release` for an optimised build. Xcode can open `Package.swift` directly for
+development — there is no `.xcodeproj` yet, and one is only needed once the Action
+Extension lands (extensions cannot be expressed in SwiftPM).
+
+**The pipeline, without UI:**
+
+```sh
 swift build
 ./.build/debug/diarize-proto <audio-or-video-file>
 ```
