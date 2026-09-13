@@ -1,5 +1,39 @@
 # Changelog
 
+## 2026-09-13 — Hark takes over the Finder Quick Action
+
+The CLI-based Quick Actions ("Transcribe to Text File / Clipboard / SRT") failed on video from
+a Finder right-click and worked from a Terminal, through four rounds of fixes. The instrumented
+run on 04 Aug settled it: inside Automator's Run Shell Script the child process inherits
+Automator's sandbox, and AVFoundation's decode fails there with a bare `_GenericObjCError` —
+AVAssetExportSession and AVAssetReader alike — while the raw file reads fine. Nothing that
+decodes media should run as a child of that action.
+
+**The fix is a different launch path, not a different API.** The single new Quick Action,
+"Transcribe with Hark", runs `open -g -a ~/Applications/Hark.app "$@"`. LaunchServices launches
+Hark as a normal user app, outside the sandbox; Hark receives the file as a document, transcribes
+it with speaker labels, writes `<file>.txt` beside it, and posts a notification. `open` returns
+at once, so the action never blocks and never shows "Run Shell Script encountered an error".
+
+**Added**
+- `AppDelegate.application(_:open:)` — files from "Open With", drag-to-icon, or the Quick
+  Action. URLs that arrive before the window has handed over the model are held, not dropped.
+- `Job.autoSave` and `AppModel.add(urls:autoSave:)` — Finder-opened jobs write their format
+  beside the original on completion and notify via osascript.
+- `CFBundleDocumentTypes` for public.audio / public.movie / public.audiovisual-content,
+  Alternate rank so Hark never becomes the default app.
+- `make-app.sh release --install` → `~/Applications/Hark.app`.
+- `install-quick-action.sh` — installs the one action, removes the three old ones, absolute
+  app path baked in (a runtime `$HOME` broke once under a redirected home).
+
+**Verified**, in the two contexts that can be driven from here: `open -g -a Hark` on a `.mov`
+on the Desktop wrote `.txt` beside it in ~12 s; the installed workflow run through
+`automator -i` wrote it in ~6 s. Both speaker-labeled. The literal Finder right-click is the one
+context not driven from here; Ivan does that once.
+
+**Retired**: the three CLI actions and the `transcribe` binary as a Finder path. The CLI still
+works from a Terminal, and its repo notes why it was superseded.
+
 ## 2026-07-21 (later) — Hark: the app
 
 Named the product **Hark** and built the real macOS app around the proven core.

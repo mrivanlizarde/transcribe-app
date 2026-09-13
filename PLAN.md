@@ -29,8 +29,11 @@ The wedge against MacWhisper and the rest of the local-transcription field:
 - [ ] **Look at the UI.** Screen capture was declined during the build, so the layout has
       never actually been reviewed. Do this before anything else — spacing, the empty
       state, and the speaker popover are all unverified guesses.
-- [ ] **Action Extension** for Finder Quick Actions, replacing the Automator workflows
-      from the earlier CLI version. This forces the move to a real `.xcodeproj`.
+- [x] **Finder Quick Action**, done 2026-09-13 as `open -g -a Hark` from an Automator
+      workflow (`install-quick-action.sh`), not as an Action Extension. The CLI version
+      could not decode video inside Automator's inherited sandbox; handing the file to the
+      app escapes it, and no `.xcodeproj` is needed. Verified via `open` and `automator`;
+      the literal right-click is confirmed by Ivan.
 - [ ] **Audio player** synced to the transcript — click a block to hear it. The single
       biggest gap versus Otter/Sana, and the timestamps are already there.
 - [ ] **Sandbox entitlements.** Required for App Store. The extension gets read access to

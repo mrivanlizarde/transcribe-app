@@ -25,8 +25,21 @@ open dist/Hark.app
 ```
 
 `make-app.sh release` for an optimised build. Xcode can open `Package.swift` directly for
-development — there is no `.xcodeproj` yet, and one is only needed once the Action
-Extension lands (extensions cannot be expressed in SwiftPM).
+development — there is no `.xcodeproj`, and none is needed: the Finder integration is a
+Quick Action that hands files to the app, not an Action Extension.
+
+**The Finder Quick Action:**
+
+```sh
+cd ~/Code/transcribe-app
+./make-app.sh release --install     # puts Hark.app in ~/Applications
+./install-quick-action.sh           # installs "Transcribe with Hark", removes the old three
+```
+
+Verify in this order, because each proves a different layer: `open -g -a ~/Applications/Hark.app
+<video>` should write `<video>.txt` beside it within seconds (the launch path); then
+`automator -i <video> ~/Library/Services/"Transcribe with Hark.workflow"` (the workflow bundle);
+then right-click a file in Finder → Quick Actions → Transcribe with Hark (the real thing).
 
 **The pipeline, without UI:**
 
@@ -66,6 +79,12 @@ every turn correctly attributed, 2.3s warm.
   real directory into Documents.
 - **Do not remove FluidAudio to "simplify".** It is the only source of speaker labels.
   Apple's framework cannot do this.
+- **Never decode media from inside an Automator "Run Shell Script".** The child process
+  inherits Automator's sandbox, and AVFoundation's decode fails there with a bare
+  `_GenericObjCError` (AVAssetExportSession and AVAssetReader alike) while the same binary
+  works from a Terminal — which hid the cause through four fixes in 2026-08/09. The Quick
+  Action hands the file to Hark with `open -g -a` instead; LaunchServices launches the app
+  outside that sandbox. See `install-quick-action.sh`.
 - **The merge attributes by chunk midpoint, not start time** — deliberate, so a word
   straddling a speaker change lands with whoever said most of it. See
   `TranscriptBuilder.build`.

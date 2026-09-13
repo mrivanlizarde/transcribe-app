@@ -40,6 +40,9 @@ final class Job: Identifiable {
     var transcript: SpeakerTranscript?
     /// Maps the engine's label ("Speaker 1") to a name the user typed.
     var speakerNames: [String: String] = [:]
+    /// Set when the file arrived from Finder (Quick Action / Open With): write this format
+    /// beside the original the moment the job finishes, and say so with a notification.
+    var autoSave: TranscriptFormat?
 
     init(url: URL) { self.url = url }
 
@@ -122,10 +125,14 @@ final class AppModel {
             || type.conforms(to: .audiovisualContent)
     }
 
-    func add(urls: [URL]) {
+    func add(urls: [URL], autoSave: TranscriptFormat? = nil) {
         let media = urls.filter(Self.isSupportedMedia)
         guard !media.isEmpty else { return }
-        let new = media.map(Job.init(url:))
+        let new = media.map { url -> Job in
+            let job = Job(url: url)
+            job.autoSave = autoSave
+            return job
+        }
         jobs.append(contentsOf: new)
         if selectedJobID == nil { selectedJobID = new.first?.id }
         drain()
@@ -174,9 +181,30 @@ final class AppModel {
 
             job.transcript = TranscriptBuilder.build(chunks: chunks, spans: spans)
             job.state = .done
+            if let format = job.autoSave {
+                if let dest = save(job, format: format) {
+                    notify("Transcript saved", dest.lastPathComponent)
+                } else {
+                    notify("Transcribe failed", "Could not write beside \(job.displayName)")
+                }
+            }
         } catch {
             job.state = .failed("\(error)")
+            if job.autoSave != nil {
+                notify("Transcribe failed", "\(job.displayName): \(error)")
+            }
         }
+    }
+
+    /// A user notification via osascript. Hark is unsandboxed, so this is reliable and needs
+    /// no notification-permission dance; the Finder Quick Action relies on it for feedback.
+    private func notify(_ title: String, _ body: String) {
+        let escape = { (s: String) in s.replacingOccurrences(of: "\"", with: "\\\"") }
+        let script = "display notification \"\(escape(body))\" with title \"\(escape(title))\""
+        let task = Process()
+        task.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+        task.arguments = ["-e", script]
+        try? task.run()
     }
 
     // MARK: - Naming

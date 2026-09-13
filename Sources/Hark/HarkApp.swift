@@ -34,10 +34,34 @@ struct HarkApp: App {
     }
 }
 
-/// Kept so the app stays alive with the Dock icon hidden, and so closing the
-/// window doesn't terminate a menu-bar-only app.
+/// Kept so the app stays alive with the Dock icon hidden, so closing the window
+/// doesn't terminate a menu-bar-only app, and to receive files from Finder.
+///
+/// Files arrive here when Hark is opened with a document: "Open With", a drag onto the
+/// icon, or the Finder Quick Action, which runs `open -g -a Hark <file>`. That path is the
+/// whole fix for the Quick Action: LaunchServices launches Hark unsandboxed, so the media
+/// decode that failed inside Automator's inherited sandbox succeeds here. Files opened this
+/// way auto-save a .txt beside the original and post a notification.
+@MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    var model: AppModel?
+    /// On a cold launch the open-files call can arrive before the window has handed us the
+    /// model; hold the URLs until it does rather than drop them.
+    private var pendingOpenURLs: [URL] = []
+    var model: AppModel? {
+        didSet { flushPendingOpens() }
+    }
+
+    func application(_ application: NSApplication, open urls: [URL]) {
+        pendingOpenURLs.append(contentsOf: urls)
+        flushPendingOpens()
+    }
+
+    private func flushPendingOpens() {
+        guard let model, !pendingOpenURLs.isEmpty else { return }
+        let urls = pendingOpenURLs
+        pendingOpenURLs.removeAll()
+        model.add(urls: urls, autoSave: .txt)
+    }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         false
