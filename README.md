@@ -8,7 +8,9 @@ cost, and nothing is uploaded. After a one-time model download it works offline.
 
 ## Status
 
-Core pipeline built and verified. No app UI yet — there's a command-line prototype.
+Working app: **Hark**, with a drop zone, speaker naming and a Finder right-click action
+("Transcribe with Hark"). Build and install steps are in `START_HERE.md`. The command-line
+prototype below still works.
 
 ## Try it
 
@@ -50,3 +52,7 @@ exist on earlier versions, and the speech models aren't available on Intel.
 ---
 
 For development details see `START_HERE.md`. For roadmap and open questions see `PLAN.md`.
+
+## License
+
+MIT. See `LICENSE`. The speaker engine, FluidAudio, is Apache 2.0.

@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-01: Public, under the MIT licence
+
+The repo went public so a friend could install Hark from a link. Before the switch, the full
+history was checked for secrets, contact details, transcripts and audio; none were there.
+Added the same MIT licence as Coffee Cup, so people may use the code as well as read it. The
+README's "No app UI yet" was months stale and now describes Hark and points to START_HERE for
+the install steps.
+
 ## 2026-09-13 — Hark takes over the Finder Quick Action
 
 The CLI-based Quick Actions ("Transcribe to Text File / Clipboard / SRT") failed on video from
